@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameBoardTilePosition : MonoBehaviour
 {
-    public Vector2Int Position;
+    public DTO.Position Position;
     public TileType TileType;
 
     // Start is called before the first frame update

@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -7,12 +8,10 @@ using UnityEngine.Networking;
 
 public class TokenManager : MonoBehaviour
 {
-    private string mApiUrl = "https://localhost:7127/api/token";
-    private string mEmail = "test@email.com";
-    private string mPassword = "test";
+    private Configuration mConfiguration;
     private string mToken = string.Empty;
     private TokenStatus mTokenStatus = TokenStatus.NeedToUpdate;
-
+    private DateTime mTimeToRefreshToken = DateTime.MinValue;
     private static TokenManager mInstance = null;
 
     public static TokenManager Instance
@@ -38,11 +37,19 @@ public class TokenManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        this.mConfiguration = Configuration.GetInstance();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(DateTime.UtcNow > this.mTimeToRefreshToken 
+            && this.mTokenStatus == TokenStatus.Updated)
+        {
+            Debug.Log("It's time to refresh token");
+            this.UpdateToken();
+        }
+
         if(this.mTokenStatus == TokenStatus.NeedToUpdate)
         {
             StartCoroutine(this.GetNewToken());
@@ -69,9 +76,9 @@ public class TokenManager : MonoBehaviour
         this.mTokenStatus = TokenStatus.Updating;
         Debug.Log("Trying to get Token...");
 
-        var json = "{\"email\": \"" + this.mEmail + "\", \"password\": \"" + this.mPassword + "\"}";
+        var json = "{\"email\": \"" + this.mConfiguration.UserName + "\", \"password\": \"" + this.mConfiguration.UserPassword + "\"}";
 
-        var request = new UnityWebRequest(this.mApiUrl, "POST");
+        var request = new UnityWebRequest(this.mConfiguration.EndpointGetToken, "POST");
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
         request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
@@ -84,6 +91,7 @@ public class TokenManager : MonoBehaviour
             // done
             Debug.Log("Token is here, Baby ! :)");
             Debug.Log(request.downloadHandler.text);
+            this.mTimeToRefreshToken = DateTime.UtcNow.AddMinutes(10);
             this.mToken = request.downloadHandler.text;
             this.mTokenStatus = TokenStatus.Updated;
         }

@@ -1,21 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Build.Content;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
 {
-    public GameObject tileWhite; //If use one board design, remove the array.
+    public GameObject tileWhite; //If use one mGameBoard design, remove the array.
     public GameObject tileWall;
     public GameObject tileNullWall;
     public GameObject tileWhiteWall;
 
+    public Dictionary<DTO.Position, GameObject> WallTiles;
+    public Dictionary<DTO.Position, GameObject> WalkableTiles;
+
+
     public Dictionary<Vector2Int, Vector2> positions = new Dictionary<Vector2Int, Vector2>();
+
+    public static GameObject Create(GameObject prefab)
+    {
+        return Instantiate(prefab);
+    }
 
     // Start is called before the first frame update
     void Start()
     {
+        this.WallTiles = new Dictionary<DTO.Position, GameObject>();
+        this.WalkableTiles = new Dictionary<DTO.Position, GameObject>();
         DrawChessBoard();
+        Debug.Log("GameBoard is ready.");
     }
 
     // Update is called once per frame
@@ -52,8 +63,9 @@ public class GameBoard : MonoBehaviour
                     if (isTileToMove)
                     {
                         var gameBoardTilePosition = tile.GetComponent<GameBoardTilePosition>();
-                        gameBoardTilePosition.Position = new Vector2Int(column, row);
+                        gameBoardTilePosition.Position = new DTO.Position(column, row);
                         gameBoardTilePosition.TileType = TileType.WinTile;
+                        WalkableTiles.Add(gameBoardTilePosition.Position, tile);
                     }
                 }
             }
@@ -82,8 +94,9 @@ public class GameBoard : MonoBehaviour
                         if (isTileToPlaceWall)
                         {
                             var gameBoardTilePosition = tile.GetComponent<GameBoardTilePosition>();
-                            gameBoardTilePosition.Position = new Vector2Int(column, row);
+                            gameBoardTilePosition.Position = new DTO.Position(column, row);
                             gameBoardTilePosition.TileType = TileType.WallTile;
+                            WallTiles.Add(gameBoardTilePosition.Position, tile);
                         }
                     }
                 }
@@ -105,15 +118,17 @@ public class GameBoard : MonoBehaviour
                         GameObject tile = Instantiate(isTileToMove ? tileWhite : tileWall , pos, Quaternion.identity, this.transform);
 
                         var gameBoardTilePosition = tile.GetComponent<GameBoardTilePosition>();
-                        gameBoardTilePosition.Position = new Vector2Int(column, row);
+                        gameBoardTilePosition.Position = new DTO.Position(column, row);
 
                         if (isTileToMove)
                         {
                             gameBoardTilePosition.TileType = TileType.PlayerTile;
+                            WalkableTiles.Add(gameBoardTilePosition.Position, tile);
                         }
                         else
                         {
                             gameBoardTilePosition.TileType = TileType.WallTile;
+                            WallTiles.Add(gameBoardTilePosition.Position, tile);
                         }
                     }
                 }
