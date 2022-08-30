@@ -69,6 +69,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a733861213464d9df9942908c7124, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerPrefab: {fileID: 643046488143825258, guid: a9bc6853930db374ca166e9a8e4cd9c9, type: 3}
-  EnemyPrefab: {fileID: 3027825274005455767, guid: b236f11e1ff49c64286e2b7e29e77dda, type: 3}
-  GameBoardPrefab: {fileID: 6208031924597097876, guid: fd22163f2949da04fa412323a6218f95, type: 3}
+  PlayerPrefab: {fileID: 1683234833179657796, guid: 006ba29cb2847b84c860a398dbc7d715, type: 3}
+  EnemyPrefab: {fileID: 720719482363795666, guid: 60dc7665b30acc5499375dff0313e553, type: 3}
+  GameBoard: {fileID: 0}

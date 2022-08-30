@@ -10,13 +10,26 @@ public class Enemy : MonoBehaviour
     private GameBoard mGameBoard;
     private GameHubManager mGameHubManager;
     private DTO.Position mCurrentPosition;
-
-    public static GameObject Create(GameObject prefab, GameBoard gameBoard)
+    private DTO.Enums.Direction mDirectionToWin;
+    public static GameObject Create(GameObject prefab, GameBoard gameBoard, DTO.Position position, DTO.Enums.Direction directionToWin)
     {
-        var gameObject = Instantiate(prefab);
+        var enemyWorldPosition = gameBoard.WalkableTiles[position].transform.position;
+
+        var gameObject = Instantiate(prefab, new Vector3(enemyWorldPosition.x, 10, enemyWorldPosition.z), Quaternion.Euler(0, 0, 0));
         var enemy = gameObject.GetComponent<Enemy>();
         enemy.mGameBoard = gameBoard;
+        enemy.SetPosition(position);
+        enemy.SetDirectionToWin(directionToWin);
         return gameObject;
+    }
+
+    public void SetPosition(DTO.Position position)
+    {
+        this.mCurrentPosition = position;
+    }
+    public void SetDirectionToWin(DTO.Enums.Direction directionToWin)
+    {
+        this.mDirectionToWin = directionToWin;
     }
 
     // Start is called before the first frame update
@@ -36,21 +49,23 @@ public class Enemy : MonoBehaviour
 
     private void OnEnemyMadeMove(Guid userId, DTO.Enums.Direction direction)
     {
+        var tilesToMove = 2;
+
         if (direction == DTO.Enums.Direction.Up)
         {
-            this.mCurrentPosition.Y += 1;
+            this.mCurrentPosition.Y += tilesToMove;
         }
         else if (direction == DTO.Enums.Direction.Down)
         {
-            this.mCurrentPosition.Y -= 1;
+            this.mCurrentPosition.Y -= tilesToMove;
         }
         else if (direction == DTO.Enums.Direction.Right)
         {
-            this.mCurrentPosition.X += 1;
+            this.mCurrentPosition.X -= tilesToMove;
         }
         else if (direction == DTO.Enums.Direction.Left)
         {
-            this.mCurrentPosition.X -= 1;
+            this.mCurrentPosition.X += tilesToMove;
         }
     }
 }

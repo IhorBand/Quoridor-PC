@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public Guid GameId;
     public string Message;
     public bool IsNeedToSendData = false;
     public int MessageCount = 0;
@@ -17,13 +16,33 @@ public class Player : MonoBehaviour
     private DTO.Enums.Direction mDirectionToMove;
     private GameHubManager mGameHubManager;
     private DTO.Position mCurrentPosition;
-
-    public static GameObject Create(GameObject prefab, GameBoard Board)
+    private DTO.Enums.Direction mDirectionToWin;
+    public static GameObject Create(GameObject prefab, GameBoard Board, DTO.Position playerPosition, bool isAbleToMove, DTO.Enums.Direction directionToWin)
     {
-        var gameObject = Instantiate(prefab);
+        var playerWorldPosition = Board.WalkableTiles[playerPosition].transform.position;
+
+        var gameObject = Instantiate(prefab, new Vector3(playerWorldPosition.x, 10, playerWorldPosition.z), Quaternion.Euler(0, 0, 0));
         var player = gameObject.GetComponent<Player>();
         player.mGameBoard = Board;
+        player.SetIsAbleToMove(isAbleToMove);
+        player.SetPosition(playerPosition);
+        player.SetDirectionToWin(directionToWin);
         return gameObject;
+    }
+
+    public void SetPosition(DTO.Position position)
+    {
+        this.mCurrentPosition = position;
+    }
+    
+    public void SetIsAbleToMove(bool isAbleToMove)
+    {
+        this.mIsMyTurn = isAbleToMove;
+    }
+
+    public void SetDirectionToWin(DTO.Enums.Direction directionToWin)
+    {
+        this.mDirectionToWin = directionToWin;
     }
 
     // Start is called before the first frame update
@@ -32,8 +51,6 @@ public class Player : MonoBehaviour
         this.mGameHubManager = GameHubManager.Instance;
         this.mGameHubManager.OnReceiveMessage += OnMessageReceived;
 
-        this.mGameHubManager.OnJoinGameSuccess += OnJoinGameSuccess;
-        
         this.mGameHubManager.OnMakeMoveSuccess += OnMakeMoveSuccess;
         this.mGameHubManager.OnMakeMoveError += OnMakeMoveError;
         this.mGameHubManager.OnBuildWallSuccess += OnBuildWallSuccess;
@@ -41,6 +58,15 @@ public class Player : MonoBehaviour
 
         this.mGameHubManager.OnUserBuiltWall += OnEnemyBuiltWall;
         this.mGameHubManager.OnUserMadeMove += OnEnemyMadeMove;
+
+        var mouseAimCamera = Camera.main.gameObject.GetComponent<MouseAimCamera>();
+        var cameraTransform = this.transform.Find("CameraPos");
+        mouseAimCamera.SetTarget(cameraTransform, new Vector3(0, -1.97f, 2.5f));
+
+        if(this.mDirectionToWin == DTO.Enums.Direction.Down)
+        {
+            this.transform.rotation = Quaternion.Euler(0, 180, 0);
+        }
     }
 
     // Update is called once per frame
@@ -80,9 +106,32 @@ public class Player : MonoBehaviour
     private void SendMessageToMovePlayerInDirection(DTO.Enums.Direction direction)
     {
         this.mIsMyTurn = false;
+        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
+
+        // reverse
+        if(this.mDirectionToWin == DTO.Enums.Direction.Down)
+        {
+            if(direction == DTO.Enums.Direction.Up)
+            {
+                direction = DTO.Enums.Direction.Down;
+            }
+            else if (direction == DTO.Enums.Direction.Down)
+            {
+                direction = DTO.Enums.Direction.Up;
+            }
+            else if (direction == DTO.Enums.Direction.Left)
+            {
+                direction = DTO.Enums.Direction.Right;
+            }
+            else if (direction == DTO.Enums.Direction.Right)
+            {
+                direction = DTO.Enums.Direction.Left;
+            }
+        }
+
         this.mDirectionToMove = direction;
         this.mIsMovingAuthorized = false;
-        this.mGameHubManager.MakeMove(GameId, direction);
+        this.mGameHubManager.MakeMove(Configuration.GetInstance().GameId, direction);
     }
 
     private void MovePlayerInDirection()
@@ -94,11 +143,6 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void OnJoinGameSuccess(DTO.Position playerPosition)
-    {
-        this.mCurrentPosition = playerPosition;
-    }    
-
     private void OnMessageReceived(string message)
     {
         Debug.Log(message);
@@ -109,28 +153,32 @@ public class Player : MonoBehaviour
     {
         this.mIsMovingAuthorized = true;
         this.mIsMyTurn = false;
-        
+        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
+
+        var tilesToMove = 2;
+
         if (this.mDirectionToMove == DTO.Enums.Direction.Up)
         {
-            this.mCurrentPosition.Y += 1;
+            this.mCurrentPosition.Y += tilesToMove;
         }
         else if (this.mDirectionToMove == DTO.Enums.Direction.Down)
         {
-            this.mCurrentPosition.Y -= 1;
+            this.mCurrentPosition.Y -= tilesToMove;
         }
         else if (this.mDirectionToMove == DTO.Enums.Direction.Right)
         {
-            this.mCurrentPosition.X += 1;
+            this.mCurrentPosition.X -= tilesToMove;
         }
         else if (this.mDirectionToMove == DTO.Enums.Direction.Left)
         {
-            this.mCurrentPosition.X -= 1;
+            this.mCurrentPosition.X += tilesToMove;
         }
     }
 
     private void OnMakeMoveError(string message)
     {
         this.mIsMyTurn = true;
+        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
         this.mIsMovingAuthorized = false;
         Debug.LogError(message);
     }
@@ -138,6 +186,7 @@ public class Player : MonoBehaviour
     private void OnBuildWallSuccess(string message)
     {
         this.mIsMyTurn = false;
+        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
     }
 
     private void OnBuildWallError(string message)
@@ -154,5 +203,6 @@ public class Player : MonoBehaviour
     private void OnEnemyMadeMove(Guid userId, DTO.Enums.Direction direction)
     {
         this.mIsMyTurn = true;
+        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
     }
 }

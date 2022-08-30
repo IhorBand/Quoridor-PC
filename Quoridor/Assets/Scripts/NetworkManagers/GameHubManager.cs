@@ -11,10 +11,10 @@ using UnityEngine.UIElements;
 public class GameHubManager : MonoBehaviour
 {
     // JoinGame
-    public delegate void UserJoinedGameDelegate(string userName, Guid userId);
+    public delegate void UserJoinedGameDelegate(string userName, Guid userId, DTO.Position position, DTO.Enums.Direction directionToWin);
     public event UserJoinedGameDelegate OnUserJoinedGame;
 
-    public delegate void JoinGameSuccessDelegate(DTO.Position playerPosition);
+    public delegate void JoinGameSuccessDelegate(DTO.Position playerPosition, DTO.Position enemyPosition, bool isFull, bool IsAbleToMove, DTO.Enums.Direction directionToWin);
     public event JoinGameSuccessDelegate OnJoinGameSuccess;
 
     public delegate void JoinGameErrorDelegate(string message);
@@ -180,14 +180,14 @@ public class GameHubManager : MonoBehaviour
     private void RegisterEvents()
     {
         // join game
-        this.mGameConnection.On<string, Guid>("OnUserJoinedGame", (userName, userId) =>
+        this.mGameConnection.On<string, Guid, DTO.Position, DTO.Enums.Direction>("OnUserJoinedGame", (userName, userId, enemyPosition, directionToWin) =>
         {
-            this.OnUserJoinedGame.Invoke(userName, userId);
+            this.OnUserJoinedGame.Invoke(userName, userId, enemyPosition, directionToWin);
         });
 
-        this.mGameConnection.On<DTO.Position>("OnJoinGameSuccess", (playerPosition) =>
+        this.mGameConnection.On<DTO.Position, DTO.Position, bool, bool, DTO.Enums.Direction>("OnJoinGameSuccess", (playerPosition, enemyPosition, isFull, IsAbleToMove, directionToWin) =>
         {
-            this.OnJoinGameSuccess.Invoke(playerPosition);
+            this.OnJoinGameSuccess.Invoke(playerPosition, enemyPosition, isFull, IsAbleToMove, directionToWin);
         });
 
         this.mGameConnection.On<string>("OnJoinGameError", (message) =>

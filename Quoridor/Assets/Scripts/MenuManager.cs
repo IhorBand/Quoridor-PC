@@ -10,6 +10,7 @@ public class MenuManager : MonoBehaviour
     public InputField UserNameField;
     public InputField PasswordField;
     public Button GoButton;
+    public GameObject GameBoard;
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +30,6 @@ public class MenuManager : MonoBehaviour
         configuration.UserName = UserNameField.text;
         configuration.UserPassword = PasswordField.text;
         UserLoginPage.SetActive(false);
-        RoomManager.Create(RoomManagerPrefab);
+        RoomManager.Create(RoomManagerPrefab, GameBoard);
     }
 }

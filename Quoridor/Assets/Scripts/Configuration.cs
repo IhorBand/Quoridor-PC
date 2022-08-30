@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class Configuration
     public string UserPassword { get; set; }
     public string EndpointGetToken = "https://localhost:7127/api/token";
     public string EndpointGameHub = "https://localhost:7127/hubs/GameHub";
+    public Guid GameId { get; set; }
 
     private static Configuration instance;
 
