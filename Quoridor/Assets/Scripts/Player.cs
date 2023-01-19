@@ -106,7 +106,6 @@ public class Player : MonoBehaviour
     private void SendMessageToMovePlayerInDirection(DTO.Enums.Direction direction)
     {
         this.mIsMyTurn = false;
-        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
 
         // reverse
         if(this.mDirectionToWin == DTO.Enums.Direction.Down)
@@ -139,6 +138,7 @@ public class Player : MonoBehaviour
         if(this.mIsMovingAuthorized)
         {
             var targetPos = this.mGameBoard.WalkableTiles[this.mCurrentPosition].transform.position;
+            targetPos.y = transform.position.y;
             transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * Speed);
         }
     }
@@ -153,7 +153,6 @@ public class Player : MonoBehaviour
     {
         this.mIsMovingAuthorized = true;
         this.mIsMyTurn = false;
-        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
 
         var tilesToMove = 2;
 
@@ -178,7 +177,6 @@ public class Player : MonoBehaviour
     private void OnMakeMoveError(string message)
     {
         this.mIsMyTurn = true;
-        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
         this.mIsMovingAuthorized = false;
         Debug.LogError(message);
     }
@@ -186,7 +184,6 @@ public class Player : MonoBehaviour
     private void OnBuildWallSuccess(string message)
     {
         this.mIsMyTurn = false;
-        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
     }
 
     private void OnBuildWallError(string message)
@@ -203,6 +200,5 @@ public class Player : MonoBehaviour
     private void OnEnemyMadeMove(Guid userId, DTO.Enums.Direction direction)
     {
         this.mIsMyTurn = true;
-        Debug.Log("[Player]IsMyTurn: " + this.mIsMyTurn);
     }
 }

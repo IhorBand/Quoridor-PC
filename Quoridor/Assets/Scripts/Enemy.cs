@@ -36,7 +36,6 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         this.mGameHubManager = GameHubManager.Instance;
-
         this.mGameHubManager.OnUserMadeMove += OnEnemyMadeMove;
     }
 
@@ -44,6 +43,7 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         var targetPos = this.mGameBoard.WalkableTiles[this.mCurrentPosition].transform.position;
+        targetPos.y = transform.position.y;
         transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * Speed);
     }
 
